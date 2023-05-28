@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Səs səviyyəsinin tənzimlənməsi</title>
+    <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+
+<div class="container">
+    <div class="volume-level-block">
+        <p>Səs səviyyəsinin tənzimlənməsi</p>
+
+        <div class="flex">
+            <div class="button">-</div>
+            <div class="volume-bar"></div>
+            <div class="button">+</div>
+        </div>
+        <div class="value">100%</div>
+    </div>
+</div>
+</body>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        let value = 4;
+        let ghostMode = false;
+        let ghostValue = 0;
+        const progressDisplay = document.querySelector('.volume-bar'),
+            bar = progressDisplay.appendChild(document.createElement('div')),
+            ghostBar = progressDisplay.appendChild(document.createElement('div')),
+            progress = document.querySelector('.value'),
+            decrease = document.querySelector('.button:first-child'),
+            increase = document.querySelector('.button:last-child');
+
+        const syncGhost = () => {
+            if (ghostMode) {
+                ghostBar.style.opacity = '0.5';
+                ghostBar.style.width = `${ghostValue}%`;
+            } else {
+                ghostBar.style.opacity = '0';
+            }
+
+        }
+
+        const sync = () => {
+            bar.style.width = `${value}%`;
+            progress.innerText = `${value}%`;
+            if (value > 75) {
+                bar.style.background = 'red';
+            } else if (value >= 50) {
+                bar.style.background = 'orange';
+            } else if (value < 50 && value > 25) {
+                bar.style.background = 'green';
+            } else {
+                bar.style.background = 'lightgreen';
+            }
+
+            syncGhost();
+        }
+
+        const init = () => {
+            progressDisplay.style.background = 'transparent';
+            progressDisplay.style.position = 'relative';
+            bar.style.height = '100%';
+            bar.style.transition = '200ms ease';
+            ghostBar.style.height = '100%';
+            ghostBar.style.top = '0';
+            ghostBar.style.opacity = '0';
+            ghostBar.style.position = 'absolute';
+            ghostBar.style.background = 'grey';
+            const fullProgressWith = progressDisplay.scrollWidth;
+            progressDisplay.addEventListener('click', ({offsetX}) => {
+                value = Math.round((offsetX / fullProgressWith) * 100);
+                sync();
+            });
+            const increaseCallback = () => {
+                value = Math.min(value + 1, 100);
+                sync();
+            };
+            const decreaseCallback = () => {
+                value = Math.max(value - 1, 0);
+                sync();
+            };
+            increase.addEventListener('click', increaseCallback);
+            decrease.addEventListener('click', decreaseCallback);
+            let upInterval;
+            let downInterval;
+
+            increase.addEventListener('mousedown', () => {
+                upInterval = setInterval(increaseCallback, 100);
+            });
+            increase.addEventListener('mouseup', () => {
+                clearInterval(upInterval);
+            });
+            decrease.addEventListener('mousedown', () => {
+                downInterval = setInterval(decreaseCallback, 100);
+            });
+            decrease.addEventListener('mouseup', () => {
+                clearInterval(downInterval);
+            });
+            progressDisplay.addEventListener('mouseenter', (ev) => {
+                ghostMode = true;
+                syncGhost();
+            });
+            progressDisplay.addEventListener('mouseleave', (ev) => {
+                ghostMode = false;
+                syncGhost();
+            });
+            progressDisplay.addEventListener('mousemove', ({offsetX}) => {
+                ghostValue = Math.round((offsetX / fullProgressWith) * 100);
+                syncGhost();
+            });
+            sync();
+        }
+        init();
+    })
+
+
+</script>
+</html>
